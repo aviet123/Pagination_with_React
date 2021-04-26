@@ -15,6 +15,11 @@ class Movies extends Component {
     currentPage: 1,
   };
 
+  componentDidMount() {
+    const genres = [{ name: "All Genres" }, ...getGenres()];
+    this.setState({ movies: getMovies(), genres });
+  }
+
   handleDelete = (id) => {
     this.setState(deleteMovie(id));
   };
@@ -31,7 +36,7 @@ class Movies extends Component {
   };
 
   handleGenreSelect = (genre) => {
-    this.setState({ selectedGenre: genre });
+    this.setState({ selectedGenre: genre, currentPage: 1 });
   };
 
   render() {
@@ -46,16 +51,12 @@ class Movies extends Component {
             selectedGenre={this.state.selectedGenre}
           />
         </div>
-        <div className="col-8">
-          <h2>There are {this.state.movies.length} movies in this list</h2>
-          {this.renderTable()}
-        </div>
+        <div className="col-8">{this.renderTable()}</div>
       </div>
     );
   }
 
   renderTable() {
-    const { length: count } = this.state.movies;
     const {
       pageSize,
       currentPage,
@@ -63,13 +64,15 @@ class Movies extends Component {
       movies: allMovies,
     } = this.state;
 
-    const filtered = selectedGenre
-      ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
-      : allMovies;
+    const filtered =
+      selectedGenre && selectedGenre._id
+        ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
+        : allMovies;
 
     const movies = paginate(filtered, currentPage, pageSize);
     return (
       <React.Fragment>
+        <h2>There are {filtered.length} movies in this list</h2>
         <table className="table">
           <thead>
             <tr>

@@ -10,10 +10,6 @@ const ListGroup = (props) => {
   } = props;
   return (
     <ul className="list-group">
-      <li className="list-group-item" aria-current="true">
-        All Genres
-      </li>
-
       {genres.map((genre) => (
         <li
           onClick={() => onItemSelect(genre)}
