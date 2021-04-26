@@ -2,13 +2,16 @@ import React, { Component } from "react";
 import Like from "./common/like";
 import { deleteMovie } from "../services/fakeMovieService";
 import { getMovies } from "../services/fakeMovieService";
+import { getGenres } from "../services/fakeGenreService";
 import Pagination from "./common/pagination";
 import { paginate } from "./utils/paginate";
+import ListGroup from "./common/listGroup";
 
 class Movies extends Component {
   state = {
     movies: getMovies(),
-    pageSize: 4,
+    genres: getGenres(),
+    pageSize: 3,
     currentPage: 1,
   };
 
@@ -20,7 +23,6 @@ class Movies extends Component {
     const movies = [...this.state.movies];
     const index = movies.indexOf(movie);
     movies[index].liked = !movies[index].liked;
-    console.log(movies);
     this.setState({ movies });
   };
 
@@ -28,21 +30,44 @@ class Movies extends Component {
     this.setState({ currentPage: page });
   };
 
+  handleGenreSelect = (genre) => {
+    this.setState({ selectedGenre: genre });
+  };
+
   render() {
     if (this.state.movies.length === 0)
       return <h2>There are no movies in this list</h2>;
     return (
-      <div>
-        <h2>There are {this.state.movies.length} movies in this list</h2>
-        {this.renderTable()}
+      <div className="row">
+        <div className="col-3">
+          <ListGroup
+            genres={this.state.genres}
+            onItemSelect={this.handleGenreSelect}
+            selectedGenre={this.state.selectedGenre}
+          />
+        </div>
+        <div className="col-8">
+          <h2>There are {this.state.movies.length} movies in this list</h2>
+          {this.renderTable()}
+        </div>
       </div>
     );
   }
 
   renderTable() {
     const { length: count } = this.state.movies;
-    const { pageSize, currentPage } = this.state;
-    const movies = paginate(this.state.movies, currentPage, pageSize);
+    const {
+      pageSize,
+      currentPage,
+      selectedGenre,
+      movies: allMovies,
+    } = this.state;
+
+    const filtered = selectedGenre
+      ? allMovies.filter((m) => m.genre._id === selectedGenre._id)
+      : allMovies;
+
+    const movies = paginate(filtered, currentPage, pageSize);
     return (
       <React.Fragment>
         <table className="table">
@@ -82,7 +107,7 @@ class Movies extends Component {
           </tbody>
         </table>
         <Pagination
-          itemsCount={count}
+          itemsCount={filtered.length}
           pageSize={this.state.pageSize}
           currentPage={this.state.currentPage}
           onPageChange={this.handlePageChange}
